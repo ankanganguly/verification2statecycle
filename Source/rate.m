@@ -14,7 +14,7 @@ function r = rate(X,v,lambda)
     %Unpack X
     %t = X{1};
     init = X{2};
-    %jumpTimes = X{3};
+    %jumpTimes = X{3}; 
     jumpNodes = X{4};
     
     %Extract number of nodes
