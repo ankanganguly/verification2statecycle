@@ -18,7 +18,7 @@ function r = rate(X,v,lambda)
     jumpNodes = X{4};
     
     %Extract number of nodes
-    nodes = max(size(init));
+    nodes = size(init,1);
     
     %Extract current state of X
     currVal = current(init, jumpNodes);
@@ -31,13 +31,13 @@ function r = rate(X,v,lambda)
             r = 1;
         end
     elseif v == nodes
-        if currVal(1) == 0
+        if currVal(nodes) == 0
             r = lambda/2*(currVal(1) + currVal(nodes-1));
         else
             r = 1;
         end
     else
-        if currVal(1) == 0
+        if currVal(v) == 0
             r = lambda/2*(currVal(v-1) + currVal(v+1));
         else
             r = 1;
