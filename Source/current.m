@@ -7,9 +7,14 @@
 %    currVal: vertical vector. currVal(i) is the current state of node i.
 
 function currVal = current(init, jumpNodes)
+    %Start at initial values
     currVal = init;
+    
+    %For each jump, update the value at the jump node.
     for i = 1:size(jumpNodes,1)
         currVal(jumpNodes(i)) = currVal(jumpNodes(i)) + 1;
     end
+    
+    %Reduce back to 2 states.
     currVal = mod(currVal,2);
 end
