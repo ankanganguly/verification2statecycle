@@ -15,7 +15,7 @@
 
 function X = runProcess(nodes, initCond, rateFnct, ratebd, time, lambda)
     %This constant pops up a lot
-    evntbd = 3*ratebd*time;
+    evntbd = ceil(3*ratebd*time);
     
     %Initialize elements of X
     t = 0;
@@ -57,7 +57,7 @@ function X = runProcess(nodes, initCond, rateFnct, ratebd, time, lambda)
         p = [r/ratebd;1 - sum(r,1)/ratebd];
         
         %Sample jump node
-        v = find(mnrnd(1,p));
+        v = find(mnrnd(1,p),1);
         
         if v == nodes + 1
             %Do nothing
