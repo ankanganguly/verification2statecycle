@@ -21,6 +21,7 @@ function d = density(X,lambda)
     
     %Current state
     currState = init;
+    curRate = sRate(currState, lambda);
     
     %Compute everything directly if there are no jumps
     if size(jumpTimes,1) == 0
@@ -38,14 +39,28 @@ function d = density(X,lambda)
     intStuff = zeros(size(jumpTimes,1),1);
     
     %Do first integral manually
-    intStuff(1) = jumpTimes(1)*(sum(sRate(init,lambda),1)-nodes);
-    
-    %Keep track of X state
+    intStuff(1) = jumpTimes(1)*(sum(curRate,1)-nodes);
     
     %Iterate over jumpNodes since it is the same size as original jumpTimes
     for i = 1:size(jumpNodes,1)
-        %start by computing current state
-        nv = jumpNodes(i);
+        
+        %fix jump time difference and new node
+        ti = jumpTimes(i+1) - jumpTimes(i);     %for integral
+        nv = jumpNodes(i);                      %for log product
+        
+        %Compute log product stuff
+        logProdStuff(i) = log(curRate(nv));
+        
+        %compute updated state and rate
         currState(nv) = mod(currState(nv) + 1,2);
+        curRate = sRate(currState,lambda);
+        
+        %Compute the integral
+        intStuff(i+1) = ti*(sum(curRate,1) - nodes);
     end
+    
+    logprod = sum(logProdStuff,1);
+    int = sum(intStuff,1);
+    
+    d = exp(logprod - int);
 end
