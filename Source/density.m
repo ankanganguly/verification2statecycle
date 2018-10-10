@@ -5,27 +5,49 @@
 %       init: initial value of process
 %       jumpTimes: times of jumps of process
 %       jumpNodes: Nodes which jump at a given time
-%   lambda: infection rate
+%   lambda: {infection rate, cX}
+%       cX: cell containing 4 objects (fixed path on 1,2)
+%       	t: time at end of recorded process
+%       	init: initial value of process
+%           jumpTimes: times of jumps of process
+%           jumpNodes: Nodes which jump at a given time
 %Outputs:
 %   d: the radon-nikodym derivative
 
+%I should be able to simplify this a lot! But for now I won't.
 function d = density(X,lambda)
-    %Initialize
+    %Unpack X
     t = X{1};
     init = X{2};
     jumpTimes = X{3};
     jumpNodes = X{4};
+    
+    %Unpack lambda
+    lamb = lambda{1};
+    cX = lambda{2};
+    
+    %Unpack cX
+    ct = cX{1};
+    cInit = cX{2};
+    cJumpTimes = cX{3};
+    cJumpNodes = cX{4};
     
     %Keep track of the number of nodes
     nodes = size(init,1);
     
     %Current state
     currState = init;
-    curRate = sRate(currState, lambda);
+    curRate1 = sRate(currState, lambda{1});
+    curRate2 = rRate({0,init,[],[]},lambda);
     
     %Compute everything directly if there are no jumps
     if size(jumpTimes,1) == 0
-        d = exp(-(sum(sRate(init,lambda),1)-nodes)*t);
+        d = exp(-(sum(curRate1 - curRate2,1)*t));
+        dq = exp(-(sum(curRate1([1,2,3,end]) - curRate2([1,2,3,end]),1)*t));
+        if abs(d - dq) > 0.001
+            error('Bad computation');
+        end
+    end
         return
     end
     

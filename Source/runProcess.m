@@ -5,7 +5,7 @@
 %   rateFnct: Handle to rate function.
 %   ratebd: upper bound on rate to speed up process (nodes*max(rateFnct))
 %   time: Amount of time to run simulation.
-%   lambda: input parameter
+%   lambda: input parameter(s)
 %Outputs:
 %    X: cell containing four objects
 %        t: time at end of recorded process
