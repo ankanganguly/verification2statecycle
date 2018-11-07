@@ -2,59 +2,57 @@
 %Inputs:
 %   nodes: number of nodes
 %   initCond: initial conditions are iid Bernoulli. Gives probability of 1.
-%   rateFnct: Handle to rate function.
-%   ratebd: upper bound on rate to speed up process (nodes*max(rateFnct))
+%   rateFnct: Handle to rate function. Can include extra output (error)
+%   ratebd: upper bound on rate to speed up process (max(rateFnct))
 %   time: Amount of time to run simulation.
 %   lambda: input parameter(s)
 %Outputs:
 %    X: cell containing four objects
 %        t: time at end of recorded process
 %        init: initial value of process
-%        jumpTimes: times of jumps of process
-%        jumpNodes: Nodes which jump at a given time
+%        jumps: 3xjump array. 1: jumptimes 2: jumpvertices 3:jump values
+%        currVal: value of process at time t
+%    e: array of outputs of rateFnct. Must be a double.
 
-function X = runProcess(nodes, initCond, rateFnct, ratebd, time, lambda)
-    %This constant pops up a lot
-    evntbd = ceil(3*ratebd*time);
+function [X,e] = runProcess(nodes, initCond, rateFnct, ratebd, time, lambda)
+    %Number of Poisson jumps in thinning process
+    expevnts = nodes*ratebd*time;
+    evntbd = poissrnd(expevnts);
+    %Conditioned on the number of jumps, events are unif dist.
+    PoissJumps = sort(time*rand(1,evntbd)); %time is horizontal
     
     %Initialize elements of X
-    t = 0;
-    init = binornd(1,initCond,nodes,1);
-    jumpTimes = zeros(evntbd,1);
-    jumpNodes = jumpTimes;
-    X = {0,init,[],[]};
+    init = binornd(1,initCond,nodes,1);     %vertices are vertical
+    jumps = zeros(3,evntbd);
+    currVal = init;
+    ti = 0;
     
-    %Initialize randomness
-    randJumps = exprnd(1/ratebd,evntbd,1);      %Poisson jumps
+    %Initialize X: Cells are horizontally arranged
+    X = cell(1,4);
+    X{1} = ti;
+    X{2} = init;
+    X{3} = zeros(0);
+    X{4} = currVal;
     
-    %Counters act as pointers to first open entry in corresponding array
-    rjumpCounter = 1;                           %Number of generator jumps
+    %Initialize e
+    e = zeros(evntbd);
+    
+    %Initialize counters: counter indicates entry of interest
     jumpCounter = 1;                            %Number of actual jumps
     
-    while t < time;
-        %Prevent overflow of random generator (happens with low prob)
-        if rjumpCounter > size(randJumps,1)
-            randJumps = [randJumps;exprnd(1/ratebd,evntbd,1)];
-        end
-        
-        %Prevent overflow of jump tracker (happens with low prob)
-        if jumpCounter > size(jumpTimes,1)
-            jumpTimes = [jumpTimes;zeros(evntbd,1)];
-            jumpNodes = [jumpNodes;zeros(evntbd,1)];
-        end
-        
-        %Compute current time. Note: last iteration will finish with t>time
-        t = t + randJumps(rjumpCounter);
-        X{1} = t;
-        
-        %increment random jump counter
-        rjumpCounter = rjumpCounter + 1;
+    for t = 1:evntbd
+        %Update time of X immediately
+        ti = PoissJumps(t);
+        X{1} = ti;
         
         %Compute jump rate
-        r = rateFnct(X,lambda);
+        [r,eout] = rateFnct(X,lambda);
+        
+        %Update e
+        e(t) = eout;
         
         %Derive multinomial probability
-        p = [r/ratebd;1 - sum(r,1)/ratebd];
+        p = [r/(nodes*ratebd);1 - sum(r,1)/(nodes*ratebd)];
         
         %Sample jump node
         v = find(mnrnd(1,p),1);
@@ -62,22 +60,25 @@ function X = runProcess(nodes, initCond, rateFnct, ratebd, time, lambda)
         if v == nodes + 1
             %Do nothing
         else
-            %update jumps and jump counter
-            jumpTimes(jumpCounter) = t;
-            jumpNodes(jumpCounter) = v;
-            jumpCounter = jumpCounter + 1;
+            %update jumps
+            jumps(1,jumpCounter) = PoissJumps(t);
+            jumps(2,jumpCounter) = v;
+            jumps(3,jumpCounter) = 1 - currVal(v);
             
-            %Update X
-            X{3} = jumpTimes(1:jumpCounter-1);
-            X{4} = jumpNodes(1:jumpCounter-1);
+            %update X
+            X{3} = jumps(:,1:jumpCounter);
+            
+            %Update current value
+            currVal(v) = 1 - currVal(v);
+            
+            %update X
+            X{4} = currVal;
+            
+            %Update jump counter
+            jumpCounter = jumpCounter + 1;
         end
     end
     
-    %Update jump nodes to only reflect jumps in relevant time period
-    jumpNodes = jumpNodes(and(jumpTimes < time,jumpTimes > 0));
-    
-    %Update jump times to only reflect jumps in relevant time period
-    jumpTimes = jumpTimes(and(jumpTimes < time,jumpTimes > 0));
-    
-    X = {time,init,jumpTimes,jumpNodes};       
+    %After last jump, only time updates.
+    X{1} = time;
 end

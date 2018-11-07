@@ -3,24 +3,19 @@
 %    X: cell containing four objects
 %        t: time at end of recorded process
 %        init: initial value of process
-%        jumpTimes: times of jumps of process
-%        jumpNodes: Nodes which jump at a given time
+%        jumps: 3xjump array. 1: jumptimes 2: jumpvertices 3:jump values
+%        currVal: value of process at time t
 %    lambda: infection rate
 %Outputs:
 %    r: vector. Component v of r is rate of process X at node v.
+%    e: 1
 
-function r = rate(X,lambda)
-    %Unpack X
-    %t = X{1};
-    init = X{2};
-    %jumpTimes = X{3};
-    jumpNodes = X{4};
+function [r,e] = rate(X,lambda)
+    %Start with current value
+    currVal = X{4};
     
-    %Extract number of nodes
-    nodes = size(init,1);
-    
-    %Extract current state of X
-    currVal = current(init, jumpNodes);
+    %Set e for debugging purposes
+    e = 1;
     
     %Rate calculated using vector processes
     %at 0, rate is lambda/2*sum of neighbors
