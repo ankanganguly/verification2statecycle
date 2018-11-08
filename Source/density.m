@@ -1,39 +1,29 @@
 %Calculate the density of a contact process path wrt reference path
 %Inputs:
-%   X: cell containing four objects
-%       t: time at end of recorded process
-%       init: initial value of process
-%       jumpTimes: times of jumps of process
-%       jumpNodes: Nodes which jump at a given time
-%   lambda: {infection rate, cX}
-%       cX: cell containing 4 objects (fixed path on 1,2)
-%       	t: time at end of recorded process
-%       	init: initial value of process
-%           jumpTimes: times of jumps of process
-%           jumpNodes: Nodes which jump at a given time
+%    X: cell containing four objects
+%        t: time at end of recorded process
+%        init: initial value of process
+%        jumps: 3xjump array. 1: jumptimes 2: jumpvertices 3:jump values
+%        currVal: value of process at time t
+%    lambda: infection rate
 %Outputs:
-%   d: the radon-nikodym derivative
+%    d: the radon-nikodym derivative
 
 %I should be able to simplify this a lot! But for now I won't.
 function d = density(X,lambda)
     %Unpack X
-    t = X{1};
     init = X{2};
-    jumpTimes = X{3};
-    jumpNodes = X{4};
-    
-    %Unpack lambda
-    lamb = lambda{1};
-    cX = lambda{2};
-    
-    %Unpack cX
-    ct = cX{1};
-    cInit = cX{2};
-    cJumpTimes = cX{3};
-    cJumpNodes = cX{4};
-    
+    jumps = X{3};
+
     %Keep track of the number of nodes
     nodes = size(init,1);
+    
+
+    
+    %Set the state trackers
+    currState = init;
+    cxcurrState = cInit;
+    
     
     %Current state
     currState = init;
