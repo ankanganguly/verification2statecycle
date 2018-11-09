@@ -75,4 +75,14 @@ function d = density(X,lambda)
     int = sum(intStuff,1);
     
     d = exp(logprod - int);
+    end
+
+%Calculate the log of the sum of numbers given their logs
+%Inputs:
+%   a: log of first expression in sum
+%   b: log of second expression in sum
+%Outputs
+%   s: log of sum
+function s = ladd(a,b)
+    s = log(exp(a - b) - 1) + b;
 end
