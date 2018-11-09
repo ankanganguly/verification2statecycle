@@ -49,3 +49,13 @@ function [pdense,relstdev] = MCprob(cX,samples,lambda,nodes, initCond)
     stdev = std(sampleSet);
     relstdev = stdev/pdense;        
 end
+
+%Calculate the log of the sum of numbers given their logs
+%Inputs:
+%   a: log of first expression in sum
+%   b: log of second expression in sum
+%Outputs
+%   s: log of sum
+function s = ladd(a,b)
+    s = log(exp(a - b) - 1) + b;
+end
