@@ -13,7 +13,11 @@
 %d2 = -sum_{jumps}(time from last jump)(sRate(X(prev),v) - bRate(X(prev),v))
 %d = d1 + d2
 
-%Simplification: only need to care about vertices 1,2,3 and end
+%Assumption: Condition of base process is the same as vertex history at
+%vertices 1 and 2.
+
+%Simplification: only need to care about vertices 1,2,3 and end, because
+%the jump rate at every vertex except 1 and 2 is the same.
 
 function d = density(X,lambda)
     %Unpack X
@@ -34,7 +38,7 @@ function d = density(X,lambda)
     %Set rate trackers
     curRate1 = sRate(currState, lambda);
     curRate2 = bsRate(currState,lambda);%Note: bsRate(3:4) is wrong now
-    
+        
     %Set counters
     events = size(jumps,2);
     t = 0;
@@ -45,6 +49,16 @@ function d = density(X,lambda)
     for i = 1:events
         %add to d1
         if jumps(2,i) < 3
+            %Degenerate case
+            %Check for absolute continuity or 0 probability
+            if curRate1(jumps(2,i))==0
+                d = -Inf(1);
+                return;
+            elseif curRate2(jumps(2,i))==0
+                error('Absolute continuity failure.')
+            end
+            
+            %normal case
             d1 = d1 + log(curRate1(jumps(2,i))) - log(curRate2(jumps(2,i)));
         end
         

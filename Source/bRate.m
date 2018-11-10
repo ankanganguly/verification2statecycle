@@ -59,4 +59,7 @@ function [r,e] = bRate(X,lambda)
     
     %Use bsRate
     [r,e] = bsRate(currVal,lamb);
+    
+    %Remove two vertices for consistency
+    r = r(3:end);
 end

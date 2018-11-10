@@ -1,10 +1,10 @@
 %Monte Carlo estimate of the relative probability of a path
 %Inputs: 
-%   cX: cell containing five objects (X on nodes 1,2)
-%       t: time at end of recorded process
-%       init: initial value of process
-%       jumpTimes: times of jumps of process
-%       jumpNodes: Nodes which jump at a given time
+%   cX: cell containing four objects (X on nodes 1,2)
+%        ct: time at end of recorded process
+%        cinit: initial value of process
+%        cjumps: 3xjump array. 1: jumptimes 2: jumpvertices 3:jump values
+%        cCurrVal: value of process at time t
 %   samples: number of MC samples I'm taking
 %   lambda: infection rate
 %   nodes: number of nodes in full process we are conditioning over
@@ -15,39 +15,43 @@
 
 %Compute density that X follows cX on nodes 1 and 2
 
-function [pdense,relstdev] = MCprob(cX,samples,lambda,nodes, initCond)
-    %Unpack cX
-    ct = cX{1};
-    cinit = cX{2};
-    cjumpTimes = cX{3};
-    cjumpNodes = cX{4};
-    
+function [sampleSet,pdense,relstdev] = MCprob(cX,samples,lambda,nodes, ratebd,initCond)   
     %Initialize samples
     sampleSet = zeros(samples,1);
     
     for i = 1:samples
         %Run X in reference
-        Xc = runProcess(nodes - cnumNodes, initCond, @baseRate,nodes - cnumNodes,ct,lambda);
-        
+        X = runProcess(nodes - 2, initCond, @bRate,ratebd,cX{1},{lambda,cX});
+
         %Get whole X
-        init = [cinit;Xc{2}];
-        jumps = [cjumpTimes,cjumpNodes;Xc{3},Xc{4}];
-        
-        %sort jumps so that time is chronological
-        jumps = sortrows(jumps);
-        jumpTimes = jumps(:,1);
-        jumpNodes = jumps(:,2);
-        
-        %reassemble X
-        X = {ct,init,jumpTimes,jumpNodes};
+        X{2} = [cX{2};X{2}];
+        jumps = X{3};
+        if ~isempty(jumps)
+            jumps(2,:) = 2+ jumps(2,:);
+        end
+        jumps = [cX{3},jumps];
+        jumps = (sortrows(jumps',1))';
+        X{3} = jumps;
+        X{4} = [cX{4};X{4}];
         
         %Calculate density of X
         sampleSet(i) = density(X,lambda);
     end
     
-    pdense = sum(sampleSet)/samples;
-    stdev = std(sampleSet);
-    relstdev = stdev/pdense;        
+    %Compute log of mean
+    pdense = sampleSet(1);
+    for i = 2:samples
+        pdense = ladd(pdense,sampleSet(i));
+    end
+    pdense = pdense - log(samples);
+    
+    s = 2*labsdiff(sampleSet(1),pdense);
+    for i = 2:samples
+        s = ladd(s,2*labsdiff(sampleSet(i),pdense));
+    end
+    
+    stdev = (s - log(samples - 1))/2;
+    relstdev = exp(stdev-pdense);        
 end
 
 %Calculate the log of the sum of numbers given their logs
@@ -57,5 +61,21 @@ end
 %Outputs
 %   s: log of sum
 function s = ladd(a,b)
-    s = log(exp(a - b) - 1) + b;
+    c = min(a,b);
+    d = max(a,b);
+    if d == -Inf
+        s = -Inf;
+    else
+        s = log1p(exp(c - d)) + d;
+    end
+end
+
+function s = labsdiff(a,b)
+    c = max(a,b);
+    d = min(a,b);
+    if d == -Inf
+        s = c;
+    else
+        s = log(exp(c - d) - 1) + d;
+    end
 end
