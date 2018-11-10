@@ -30,7 +30,9 @@ function d = density(X,lambda)
     
     %Thin to only include what we need
     init = init([1,2,3,end]);
-    jumps = jumps(:,or(jumps(2,:) < 4, jumps(2,:) == n));
+    if ~isempty(jumps)
+        jumps = jumps(:,or(jumps(2,:) < 4, jumps(2,:) == n));
+    end
 
     %Set the state trackers
     currState = init; 

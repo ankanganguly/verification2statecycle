@@ -15,7 +15,7 @@
 
 %Compute density that X follows cX on nodes 1 and 2
 
-function [pdense,relstdev] = MCprob(cX,samples,lambda,nodes, ratebd,initCond)   
+function [pdense,relstdev] = MCnum(cX,samples,lambda,nodes, ratebd,initCond)   
     %Initialize samples
     sampleSet = zeros(samples,1);
     
@@ -37,10 +37,17 @@ function [pdense,relstdev] = MCprob(cX,samples,lambda,nodes, ratebd,initCond)
         X{4} = [cX{4};X{4}];
         
         %Calculate density of X
-        sampleSet(i) = density(X,lambda);
+        d = density(X,lambda);
+        
+        %Compute the rate
+        r = sRate(X{4},lambda);
+        r = r(2);
+        
+        %input the sample
+        sampleSet(i) = d + log(r);
         
 %         %DEBUG
-%         display('Denom')
+%         display('Num')
 %         display(i)
     end
     

@@ -38,11 +38,20 @@ function [r,e] = bRate(X,lambda)
     cInit = cX{2};
     
     %Look at jumps before the current time. Only these matter
-    cJ = cJumps(:,cJumps(1,:) <= t);
+    if ~isempty(cJumps)
+        cJ = cJumps(:,cJumps(1,:) <= t);
+    else
+        cJ = [];
+    end
     
     %Find the last jump time at each conditioned node
-    v1 = find(cJ(2,:) == 1,1,'last');
-    v2 = find(cJ(2,:) == 2,1,'last');
+    if ~isempty(cJ)
+        v1 = find(cJ(2,:) == 1,1,'last');
+        v2 = find(cJ(2,:) == 2,1,'last');
+    else
+        v1 = [];
+        v2 = [];
+    end
     
     %If empty, use conditional initial condition, otherwise fill in last
     %jump value

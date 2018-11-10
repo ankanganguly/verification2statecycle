@@ -35,7 +35,7 @@ function [X,e] = runProcess(nodes, initCond, rateFnct, ratebd, time, lambda)
     X{4} = currVal;
     
     %Initialize e
-    e = zeros(evntbd);
+    e = zeros(evntbd,2);
     
     %Initialize counters: counter indicates entry of interest
     jumpCounter = 1;                            %Number of actual jumps
@@ -45,11 +45,16 @@ function [X,e] = runProcess(nodes, initCond, rateFnct, ratebd, time, lambda)
         ti = PoissJumps(t);
         X{1} = ti;
         
+%         %DEBUG
+%         display(rateFnct)
+%         display(t)
+        
         %Compute jump rate
         [r,eout] = rateFnct(X,lambda);
         
         %Update e
-        e(t) = eout;
+        e(t,1) = eout;
+        e(t,2) = ti;
         
         %Derive multinomial probability
         p = [r/(nodes*ratebd);1 - sum(r,1)/(nodes*ratebd)];
