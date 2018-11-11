@@ -19,7 +19,7 @@ function [pdense,relstdev] = MCnum(cX,samples,lambda,nodes, ratebd,initCond)
     %Initialize samples
     sampleSet = zeros(samples,1);
     
-    for i = 1:samples
+    parfor i = 1:samples
         %Run X in reference
         X = runProcess(nodes - 2, initCond, @bRate,ratebd,cX{1},{lambda,cX});
 

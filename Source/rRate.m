@@ -22,7 +22,7 @@ function [r,e] = rRate(X,lambda)
     currVal = X{4};
     
     %Impatience
-    display(t)
+    %display(t)
     
     %Unpack lambda
     lamb = lambda(1);
