@@ -3,8 +3,8 @@
 %    X: cell containing four objects
 %        t: time at end of recorded process
 %        init: initial value of process
-%        jumpTimes: times of jumps of process
-%        jumpNodes: Nodes which jump at a given time
+%        jumps
+%        currVal
 %    lambda: infection rate
 %Outputs:
 %    r: vector. Component v of r is rate of process X at node v.
@@ -13,7 +13,7 @@ function r = mRate(X,lambda)
     
     %initialize
     t = X{1};
-    currVal = current(X{2},X{4});
+    currVal = X{4};
     
     %Directly calculated elsewhere and hardcoded here.
     if currVal == 0

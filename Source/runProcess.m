@@ -51,6 +51,7 @@ function [X,e] = runProcess(nodes, initCond, rateFnct, ratebd, time, lambda)
         
         %Compute jump rate
         [r,eout] = rateFnct(X,lambda);
+        r = min(r,ratebd);
         
 %         %DEBUG
 %         if isequal(rateFnct,@rRate)
