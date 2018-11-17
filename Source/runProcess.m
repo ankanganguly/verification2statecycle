@@ -66,6 +66,8 @@ function [X,e] = runProcess(nodes, initCond, rateFnct, ratebd, time, lambda)
         %Derive multinomial probability
         p = [r/(nodes*ratebd);1 - sum(r,1)/(nodes*ratebd)];
         
+        
+        
         %Sample jump node
         v = find(mnrnd(1,p),1);
         

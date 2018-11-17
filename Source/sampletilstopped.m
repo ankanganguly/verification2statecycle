@@ -30,7 +30,7 @@ function sampletilstopped()
         Xs{6} = [Xs{6};zeros(1,3);e];
         
         %Save samples
-        save('100MC15NContactrunfixed','Xs')
+        save('100MC15NContactrunreallyfixednolog','Xs')
         %clear;
     end
 end

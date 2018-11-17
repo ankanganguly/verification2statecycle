@@ -14,7 +14,7 @@
 %algorithm, I will run the ordinary runProcess function with this rate.
 %Then in the MC algorithm I will substitute in the conditional nodes. This
 %should run the full W process. I can simplify it later.
-function [r,e] = rRate(X,lambda)
+function [r,e] = lrRate(X,lambda)
     %Extract X
     t = X{1};
     init = X{2};
@@ -59,7 +59,7 @@ function [r,e] = rRate(X,lambda)
     [rdone,edone] = MCprob(cX,samples,lamb,nodes,ratebd,initCond);
     [rnone,enone] = MCnum(cX,samples,lamb,nodes,ratebd,initCond);
     
-    r(1) = rnone/rdone;
+    r(1) = exp(rnone-rdone);
     esone = (1 - 2*enone)/(1+2*edone);          %Smallest possible end of interval
     elone = (1 + 2*enone)/(1-2*edone);          %Largest possible end of interval
     eone = max(1 - esone,elone - 1);            %Maximum radius
@@ -86,7 +86,7 @@ function [r,e] = rRate(X,lambda)
     [rdthree,edthree] = MCprob(cX,samples,lamb,nodes,ratebd,initCond);
     [rnthree,enthree] = MCnum(cX,samples,lamb,nodes,ratebd,initCond);
     
-    r(3) = rnthree/rdthree;
+    r(3) = exp(rnthree-rdthree);
     esthree = (1 - 2*enthree)/(1+2*edthree);
     elthree = (1 + 2*enthree)/(1-2*edthree);
     ethree = max(1 - esthree,elthree - 1);

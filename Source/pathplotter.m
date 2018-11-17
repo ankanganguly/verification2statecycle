@@ -1,12 +1,12 @@
-function Xpaths = pathplotter()
+function [x,Xpaths] = pathplotter(samples,nodes)
     Xs = cell(5);
     Xs{2} = 5;
     Xs{3} = [];
     Xs{4} = [];
     Xs{5} = [];
     
-    for i = 1:1000
-        X = runProcess(1000,0.5,@rate,1.1,5,1.1);
+    for i = 1:samples
+        X = runProcess(nodes,0.5,@rate,1.1,5,1.1);
         Xs{1} = i;
         Xs{3} = [Xs{3};2;X{2}];
         Xs{4} = [Xs{4},zeros(3,1),X{3}];
@@ -20,15 +20,15 @@ function Xpaths = pathplotter()
     x = linspace(0,5);
     s = max(size(x));
     
-    Xpaths = zeros(1000,100);
+    Xpaths = zeros(samples,s);
     
     inits = Xs{3};
-    initones = inits(mod(1:1001000,1001) == 2);
+    initones = inits(mod(1:(nodes + 1)*samples,nodes+1) == 2);
     
     jumps = [Xs{4},zeros(3,1)];
     jumps = jumps(:,jumps(2,:) < 2);
     
-    for sym = 1:1000
+    for sym = 1:samples
         for i = 1:s
             if i==1
                 Xpaths(sym,i) = initones(sym);

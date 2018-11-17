@@ -15,11 +15,11 @@
 
 %Compute density that X follows cX on nodes 1 and 2
 
-function [pdense,relstdev] = MCnum(cX,samples,lambda,nodes, ratebd,initCond)   
+function [pdense,relstdev] = lMCnum(cX,samples,lambda,nodes, ratebd,initCond)   
     %Initialize samples
     sampleSet = zeros(samples,1);
     
-    for i = 1:samples
+    parfor i = 1:samples
         %Run X in reference
         X = runProcess(nodes - 2, initCond, @bRate,ratebd,cX{1},{lambda,cX});
 
@@ -37,14 +37,14 @@ function [pdense,relstdev] = MCnum(cX,samples,lambda,nodes, ratebd,initCond)
         X{4} = [cX{4};X{4}];
         
         %Calculate density of X
-        d = exp(density(X,lambda));
+        d = density(X,lambda);
         
         %Compute the rate
         r = sRate(X{4},lambda);
         r = r(2);
         
         %input the sample
-        sampleSet(i) = d*r;
+        sampleSet(i) = d + log(r);
         
 %         %DEBUG
 %         display('Num')
@@ -52,7 +52,43 @@ function [pdense,relstdev] = MCnum(cX,samples,lambda,nodes, ratebd,initCond)
     end
     
     %Compute log of mean
-    pdense = mean(sampleSet,1);
-    stdev = std(sampleSet,1)/sqrt(samples);
-    relstdev = stdev/pdense;        
+    pdense = sampleSet(1);
+    for i = 2:samples
+        pdense = ladd(pdense,sampleSet(i));
+    end
+    pdense = pdense - log(samples);
+    
+    s = 2*labsdiff(sampleSet(1),pdense);
+    for i = 2:samples
+        s = ladd(s,2*labsdiff(sampleSet(i),pdense));
+    end
+    
+    stdev = (s - log(samples - 1) - log(samples))/2;
+    relstdev = exp(stdev-pdense);        
+end
+
+%Calculate the log of the sum of numbers given their logs
+%Inputs:
+%   a: log of first expression in sum
+%   b: log of second expression in sum
+%Outputs
+%   s: log of sum
+function s = ladd(a,b)
+    c = min(a,b);
+    d = max(a,b);
+    if d == -Inf
+        s = -Inf;
+    else
+        s = log1p(exp(c - d)) + d;
+    end
+end
+
+function s = labsdiff(a,b)
+    c = max(a,b);
+    d = min(a,b);
+    if d == -Inf
+        s = c;
+    else
+        s = log(exp(c - d) - 1) + d;
+    end
 end
